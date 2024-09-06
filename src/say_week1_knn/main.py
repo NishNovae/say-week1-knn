@@ -2,8 +2,12 @@
 
 import numpy as np
 import os
+from sklearn.neighbors import KNeighborsClassifier
+import pickle
 
 data_list = []
+kn = KNeighborsClassifier()
+#kn.fit([30, 600], [1])
 
 def yes_or_no(prompt):
     while True:
@@ -21,12 +25,16 @@ def grab_data_path(data="testdata.csv"):
     data_path = os.path.dirname(this_path) + "/data/" + data
     return data_path
 
+def get_model_path(model="model.pkl"):
+    this_path = os.path.abspath(__file__)
+    model_path = os.path.dirname(this_path) + "/data/" + model
+    return model_path
+
 def parse_data(data_path):
     global input_val, output_val 
     with open(data_path, "r") as data:
         for line in data:
-            data_list.append(line.strip().split(","))
-    
+            data_list.append(line.strip().split(","))    
     print(f"[INFO] data collected from: {data_path}")
     return
 
@@ -34,7 +42,7 @@ def bulk_train():
     for length, width, answer in data_list:
         prediction = predict(length, width)
         if prediction == answer:
-            update_correct()
+            update()
             print("Correct!")
         else:
             update_wrong()
@@ -50,8 +58,8 @@ def prompt():
 
             width = input("weight: ")
             width = float(width)
-        except TypeError:
-            print("length/width should be convertable to floating point values. Please try again.")
+        except ValueError:
+            print("[ERROR] length/width should be convertable to floating point values. Please try again.\n")
             continue
         else:
             prediction = predict(length, width)
@@ -71,7 +79,13 @@ def prompt():
                 continue
 
 def predict(length, width, initial_pred = "Bream"):
+    # training data is data_list
     pred = initial_pred
+#    if kn.predict([[width, length]])[0] == 1:
+#        return "Smelt"
+#    else:
+#        return "Bream"
+#    return pred
     return pred
 
 def update_correct():
