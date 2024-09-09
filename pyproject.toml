@@ -14,3 +14,10 @@ license = {text = "MIT"}
 
 [tool.pdm]
 distribution = true
+
+[project.scripts]
+w1-fish = "say_week1_knn.main:main"
+
+[project.urls]
+Homepage="https://github.com/NishNovae/say-week1-knn"
+Issues="https://github.com/NishNovae/say-week1-knn/issues"

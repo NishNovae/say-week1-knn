@@ -82,8 +82,8 @@ def bulk_test(x_test, y_test):
         if prediction[i] == y_test[i]:
             tmp += 1
     
-    acc = tmp/len(y_test) * 100
-    print(f"RESULT: {acc} % accuracy\n")
+    acc = round(tmp/len(y_test) * 100, 2)
+    print(f"RESULT: {acc}% accuracy\n")
 
 def prompt():
     print("[INFO] Proceeding to manual prompt.\n")
@@ -116,15 +116,12 @@ def prompt():
                 return
 
 def predict(length, weight):
-    try:
-        if kn.predict([[length, weight]])[0] == 1: # 1 == Smelt
-            return 1, "Smelt"
-        else:
-            return 0, "Bream"
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        print("[INFO] Creating dummy data...")
+    if len(x_data) <= 5:
         create_dummy()
+    if kn.predict([[length, weight]])[0] == 1: # 1 == Smelt
+        return 1, "Smelt"
+    else:
+        return 0, "Bream"
 
 def update(length, weight, val):
 #    answer = "Smelt" if val == 1 else "Bream"     # Smelt: 1, Bream: 0
@@ -182,4 +179,4 @@ def main():
     print("[INFO] Finishing...")
     save_model()
 
-main()
+# main()
