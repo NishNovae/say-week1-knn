@@ -16,7 +16,7 @@ def create_dummy():
     x_data, y_data = [], []
     for i in range (10):
         x_data.append( [round(random.uniform(10, 41), 2), round(random.uniform(10, 1000), 2) ])
-        y_data.append( random.choice( [0, 1] ) )
+        y_data.append( random.choice( ["Bream", "Smelt"] ) )
 
 # yes, no, exit handling
 def yes_or_no(prompt):
@@ -47,12 +47,12 @@ def parse_data(data_path):
     x_data, y_data = [], []     # should only be called once, but redundancy
 
     with open(data_path, "r") as data:
-        next(data)                         # skips line "Length,Weight,Label"
+        next(data)                         # skips line "Length,Width,Label"
         for line in data:
-            length, weight, answer = line.strip().split(",")
+            length, width, answer = line.strip().split(",")
             val = 1 if answer == "Smelt" else 0     # Smelt: 1, Bream: 0
 
-            x_data.append([float(length), float(weight)])
+            x_data.append([float(length), float(width)])
             y_data.append(val)
     print(f"[INFO] data collected from: {data_path}")
 
@@ -87,37 +87,37 @@ def bulk_test(x_test, y_test):
 
 def prompt():
     print("[INFO] Proceeding to manual prompt.\n")
-    print("[INFO] User prompt activated! Please input the length and weight.\n")
+    print("[INFO] User prompt activated! Please input the length and width.\n")
     while True:
         try:
-            line = input("length, weight [whitespace-separated]: ")
+            line = input("length, width [whitespace-separated]: ")
             if line == 'exit':
                 return
 
-            length, weight = line.strip().split()
+            length, width = line.strip().split()
             length = float(length)
-            weight = float(weight)
+            width = float(width)
 
         except ValueError:
-            print("[ERROR] There was an ValueError. length/weight should be convertable to floating point values. Please try again.\n")
+            print("[ERROR] There was an ValueError. length/width should be convertable to floating point values. Please try again.\n")
             continue
 
         else:
-            val, prediction = predict(length, weight)
-            print(f"The prediction for given length: {length}, weight: {weight} is: {prediction}")
+            val, prediction = predict(length, width)
+            print(f"The prediction for given length: {length}, width: {width} is: {prediction}")
             correct = yes_or_no("Was this prediction correct?")
 
             if correct == 1:
-                update(length, weight, val) # updates model
+                update(length, width, val) # updates model
             elif correct == 0:
-                update(length, weight, 1-val)
+                update(length, width, 1-val)
             else:
                 print("Exiting...")
                 return
 
-def predict(length, weight):
+def predict(length, width):
     try:
-        if kn.predict([[length, weight]])[0] == 1: # 1 == Smelt
+        if kn.predict([[length, width]])[0] == 1: # 1 == Smelt
             return 1, "Smelt"
         else:
             return 0, "Bream"
@@ -126,13 +126,8 @@ def predict(length, weight):
         print("[INFO] Creating dummy data...")
         create_dummy()
 
-def update(length, weight, val):
-#    answer = "Smelt" if val == 1 else "Bream"     # Smelt: 1, Bream: 0
-#    print(f"Updating: {length} {weight}: {val} which is {answer}.")
-    bulk_train([[length, weight]], [val])
-
-#    print(x_data)
-#    print(y_data)
+def update(length, width, val):
+    bulk_train([[length, width]], [val])
 
 def save_model():
     model_path = grab_model_path()
@@ -148,36 +143,31 @@ def main():
     if import_model == 1:
         try:
             global kn
-            model_path = grab_model_path()
-            with open(model_path, "rb") as f:
+            with open(grab_model_path(), "rb") as f:
                 kn = pickle.load(f)
-            print(f"\n[INFO] Model successfully loaded from: {model_path} !\n")
-
         except:
-            print("\n[INFO] Model doesn't exist! Creating dummy...")
+            print("[INFO] Model doesn't exist! Creating dummy...")
             create_dummy()
             bulk_train()
 
     elif import_model == -1:
-        print("\n[INFO] Finishing...")    # DOESNT save model b/c unloaded
+        print("[INFO] Finishing...")    # DOESNT save model b/c unloaded
         return
 
-    else:
-        print("\n[INFO] Startingn from new model.\n")
-    
+    # import model == 0: New model
+    print("[INFO] Startingn from new model.\n")
     bulk = yes_or_no("Do you wish to bulk-train the model before entering prompt?")
+
     if bulk == 1:
         print("[INFO] Proceeding to bulk-train from prefab data...\n")
         parse_data(grab_data_path())
         bulk_train()
 
         print("[INFO] Bulk-train complete!\n")
-    elif bulk == -1:
-        print("[INFO] Finishiiing...")
-        save_model()
-        return
+        prompt()
 
-    prompt()
+    elif bulk == 0:
+        prompt()
 
     print("[INFO] Finishing...")
     save_model()
